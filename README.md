@@ -11,7 +11,7 @@ Note that this project is still a work in progress. If there is any suggestion o
 
 # Usage
 ## 0) Download the data.
-Download the data at [here](https://mycuhk-my.sharepoint.com/:u:/g/personal/1155079751_link_cuhk_edu_hk/EXsJ_2t1qtJHlFz9FEQe3swBx-Atm31Sg0cBbiDq6dW7ag?e=lUTeQQ) and unzip the dataset into the folder.
+Download the data [here](https://mycuhk-my.sharepoint.com/:u:/g/personal/1155079751_link_cuhk_edu_hk/EXsJ_2t1qtJHlFz9FEQe3swBx-Atm31Sg0cBbiDq6dW7ag?e=lUTeQQ) and unzip the dataset into the folder.
 
 ## 1) Preprocess the data.
 ```bash
@@ -40,7 +40,7 @@ python translate.py -model ./exp/pretrain/finetune_2layer_100epoch_6head_0.5mask
 ```
 
 ### 4) Evaluate the result
-> Switch to python 2.7 for the following executions:
+Switch to python 2.7 for the following executions:
 ```bash
 python evaluate/evaluate.py pathto/candidate pathto/reference
 perl evaluate/multi-bleu.perl pathto/reference < pathto/candidate
