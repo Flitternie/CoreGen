@@ -1,4 +1,4 @@
-# Commit message generation with Transformer
+# Exploiting Structural Code Embedding for Augmented Code Commit Message Generation
 This is the source code repository for the paper "Exploiting Structural Code Embedding for Augmented Code Commit Message Generation".
 
 Note that this project is still a work in progress. If there is any suggestion or error, feel free to fire an issue to let me know.
