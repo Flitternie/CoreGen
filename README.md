@@ -28,7 +28,7 @@ python train.py -data exp/vocab/pretrain_vocab -save_model exp/pretrain/pretrain
 ```
 > Adjust the ```save_thres``` parameter to define the model saving threshold
 
-### b) Self-supervised Code Embedding Exploitation
+### b) Supervised Commit Message Generation
 ```bash
 python train.py -data exp/vocab/vocab -model exp/pretrain/pretrain_2layer_40epoch_6head_0.5maskrate_accu_XXX.chkpt -save_model exp/finetune/finetune_2layer_100epoch_6head_0.5maskrate -log exp/log/finetune_2layer_100epoch_6head_0.5maskrate -save_mode best -save_thres 0.35 -proj_share_weight -embs_share_weight -label_smoothing -epoch 100 -batch_size 32 -n_head 6 -n_layers 2
 ```
