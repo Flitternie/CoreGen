@@ -34,12 +34,12 @@ python train.py -data exp/vocab/vocab -model exp/pretrain/pretrain_2layer_40epoc
 ```
 > Adjust the ```save_thres``` parameter to define the model saving threshold
 
-### 3) Test the model
+## 3) Inference
 ```bash
 python translate.py -model ./exp/pretrain/finetune_2layer_100epoch_6head_0.5maskrate_accu_XXX.chkpt -vocab exp/vocab/vocab -src ./data/cleaned.test.diff -output exp/result/finetuned_2layer_0.5maskrate.msg
 ```
 
-### 4) Evaluate the result
+## 4) Result Evaluation
 Switch to python 2.7 for the following executions:
 ```bash
 python evaluate/evaluate.py pathto/candidate pathto/reference
