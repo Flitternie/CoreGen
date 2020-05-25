@@ -48,5 +48,4 @@ perl evaluate/multi-bleu.perl pathto/reference < pathto/candidate
 ---
 # Performance
 - To be updated
----
 
