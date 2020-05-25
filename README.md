@@ -10,10 +10,10 @@ Note that this project is still a work in progress. If there is any suggestion o
 - numpy
 
 # Usage
-## 0. Download the data.
+## 0. Data Preparation
 Download the data [here](https://mycuhk-my.sharepoint.com/:u:/g/personal/1155079751_link_cuhk_edu_hk/EXsJ_2t1qtJHlFz9FEQe3swBx-Atm31Sg0cBbiDq6dW7ag?e=lUTeQQ) and unzip the dataset into the folder.
 
-## 1. Preprocess the data.
+## 1. Data Preprocessing
 ```bash
 python preprocess.py -train_src data/cleaned.train.diff -train_tgt data/cleaned.train.msg -valid_src data/cleaned.valid.diff -valid_tgt data/cleaned.valid.msg -save_data exp/vocab/vocab -max_len 300 -min_word_count 0 -share_vocab
 ```
@@ -21,7 +21,7 @@ python preprocess.py -train_src data/cleaned.train.diff -train_tgt data/cleaned.
 python pretrain.py -train_src ./data/cleaned.train.diff -valid_src ./data/cleaned.valid.diff -vocab ./exp/vocab/vocab -save_data ./exp/vocab/pretrain_vocab -mask_rate 0.5 -max_len 300 -min_word_count 0
 ```
 
-## 2. Train the model
+## 2. Training
 ### a) Self-supervised Code Embedding Exploitation
 ```bash
 python train.py -data exp/vocab/pretrain_vocab -save_model exp/pretrain/pretrain_2layer_40epoch_6head_0.5maskrate -log exp/log/pretrain_2layer_40epoch_6head_0.5maskrate -save_mode best -save_thres 0.85 -proj_share_weight -embs_share_weight -label_smoothing -epoch 40 -batch_size 16 -n_head 6 -n_layers 2
