@@ -45,7 +45,6 @@ Switch to python 2.7 for the following executions:
 python evaluate/evaluate.py pathto/candidate pathto/reference
 perl evaluate/multi-bleu.perl pathto/reference < pathto/candidate
 ```
----
 # Performance
 - To be updated
 
