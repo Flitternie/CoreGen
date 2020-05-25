@@ -1,23 +1,7 @@
 # Commit message generation with Transformer
+This is the repository for the source code of paper "Exploiting Structural Code Embedding for Augmented Code Commit Message Generation".
 
-This is a PyTorch implementation of the Transformer model in "[Attention is All You Need](https://arxiv.org/abs/1706.03762)" (Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin, arxiv, 2017). 
-
-> The official Tensorflow Implementation can be found in: [tensorflow/tensor2tensor](https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/models/transformer.py).
-
-> To learn more about self-attention mechanism, you could read "[A Structured Self-attentive Sentence Embedding](https://arxiv.org/abs/1703.03130)".
-
-<p align="center">
-<img src="http://imgur.com/1krF2R6.png" width="250">
-</p>
-
-
-The project support training and translation with trained model now.
-
-Note that this project is still a work in progress.
-
-
-If there is any suggestion or error, feel free to fire an issue to let me know. :)
-
+Note that this project is still a work in progress. If there is any suggestion or error, feel free to fire an issue to let me know. :)
 
 # Requirement
 - python 3.4+
@@ -25,37 +9,44 @@ If there is any suggestion or error, feel free to fire an issue to let me know. 
 - tqdm
 - numpy
 
-
 # Usage
-### 0) Download the data.
-Download and unzip the dataset into the folder.
+## 0) Download the data.
+Download the data at [here](https://mycuhk-my.sharepoint.com/:u:/g/personal/1155079751_link_cuhk_edu_hk/EXsJ_2t1qtJHlFz9FEQe3swBx-Atm31Sg0cBbiDq6dW7ag?e=lUTeQQ) and unzip the dataset into the folder.
 
-### 1) Preprocess the data.
+## 1) Preprocess the data.
 ```bash
-python preprocess.py -train_src pathtodata/train_sourcefile -train_tgt pathtodata/train_targetfile -valid_src pathtodata/valid_sourcefile -valid_tgt pathtodata/valid_targetfile -save_data pathtodata/vocab -max_len 400 -min_word_count 0 -share_vocab
+python preprocess.py -train_src data/cleaned.train.diff -train_tgt data/cleaned.train.msg -valid_src data/cleaned.valid.diff -valid_tgt data/cleaned.valid.msg -save_data exp/vocab/vocab -max_len 300 -min_word_count 0 -share_vocab
+```
+```bash
+python pretrain.py -train_src ./data/cleaned.train.diff -valid_src ./data/cleaned.valid.diff -vocab ./exp/vocab/vocab -save_data ./exp/vocab/pretrain_vocab -mask_rate 0.5 -max_len 300 -min_word_count 0
 ```
 
-### 2) Train the model
+## 2) Train the model
+### a) Self-supervised Code Embedding Exploitation
 ```bash
-python train.py -data pathtodata/vocab -save_model exp/model/ -log exp/log/ -save_mode best  -proj_share_weight -embs_share_weight -label_smoothing -epoch 100
+python train.py -data exp/vocab/pretrain_vocab -save_model exp/pretrain/pretrain_2layer_40epoch_6head_0.5maskrate -log exp/log/pretrain_2layer_40epoch_6head_0.5maskrate -save_mode best -save_thres 0.85 -proj_share_weight -embs_share_weight -label_smoothing -epoch 40 -batch_size 16 -n_head 6 -n_layers 2
 ```
-> If your source and target language share one common vocabulary, use the `-embs_share_weight` flag to enable the model to share source/target word embedding. 
+> Adjust the ```save_thres``` parameter to define the model saving threshold
+
+### b) Self-supervised Code Embedding Exploitation
+```bash
+python train.py -data exp/vocab/vocab -model exp/pretrain/pretrain_2layer_40epoch_6head_0.5maskrate_accu_XXX.chkpt -save_model exp/finetune/finetune_2layer_100epoch_6head_0.5maskrate -log exp/log/finetune_2layer_100epoch_6head_0.5maskrate -save_mode best -save_thres 0.35 -proj_share_weight -embs_share_weight -label_smoothing -epoch 100 -batch_size 32 -n_head 6 -n_layers 2
+```
+> Adjust the ```save_thres``` parameter to define the model saving threshold
 
 ### 3) Test the model
 ```bash
-python translate.py -model exp/model/trained.chkpt -vocab pathtodata/vocab -src pathtodata/test_sourcefile -output exp/resultfile
+python translate.py -model ./exp/pretrain/finetune_2layer_100epoch_6head_0.5maskrate_accu_XXX.chkpt -vocab exp/vocab/vocab -src ./data/cleaned.test.diff -output exp/result/finetuned_2layer_0.5maskrate.msg
 ```
+
 ### 4) Evaluate the result
+> Switch to python 2.7 for the following executions:
 ```bash
 python evaluate/evaluate.py pathto/candidate pathto/reference
 perl evaluate/multi-bleu.perl pathto/reference < pathto/candidate
 ```
 ---
 # Performance
-
+- To be updated
 ---
-# TODO
-
----
-# Acknowledgement
 
