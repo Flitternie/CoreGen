@@ -43,7 +43,7 @@ python translate.py -model ./exp/pretrain/finetune_2layer_100epoch_6head_0.5mask
 Switch to python 2.7 for the following executions:
 ```bash
 python evaluate/evaluate.py pathto/candidate pathto/reference
-perl evaluate/multi-bleu.perl pathto/reference < pathto/candidate
+perl evaluate/multi-bleu.perl -lc pathto/reference < pathto/candidate
 ```
 ## Performance
 - To be updated
