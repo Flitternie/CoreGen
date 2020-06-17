@@ -12,12 +12,13 @@ class Translator(object):
 
     def __init__(self, opt):
         self.opt = opt
+        print(opt, "\n")
         self.device = torch.device('cuda' if opt.cuda else 'cpu')
 
         checkpoint = torch.load(opt.model)
         model_opt = checkpoint['settings']
         self.model_opt = model_opt
-
+        print(model_opt)
         model = Transformer(
             model_opt.src_vocab_size,
             model_opt.tgt_vocab_size,

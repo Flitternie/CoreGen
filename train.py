@@ -140,6 +140,8 @@ def train(model, training_data, validation_data, optimizer, device, opt):
             log_train_file, log_valid_file))
 
         with open(log_train_file, 'w') as log_tf, open(log_valid_file, 'w') as log_vf:
+            log_tf.write(str(opt)+"\n")
+            log_vf.write(str(opt)+"\n")
             log_tf.write('epoch,loss,ppl,accuracy\n')
             log_vf.write('epoch,loss,ppl,accuracy\n')
 
@@ -290,7 +292,7 @@ def main():
             betas=(0.9, 0.98), eps=1e-09),
         opt.d_model, opt.n_warmup_steps)
 
-    train(transformer, training_data, validation_data, optimizer, device ,opt)
+    train(transformer, training_data, validation_data, optimizer, device, opt)
 
 
 def prepare_dataloaders(data, opt):
