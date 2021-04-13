@@ -1,5 +1,5 @@
 # CoreGen: Contextualized Code Representation Learning for Commit Message Generation
-This is the source code repository for the paper "CoreGen: Contextualized Code Representation Learning for Commit Message Generation".
+This is the source code repository for the paper [CoreGen: Contextualized Code Representation Learning for Commit Message Generation](https://arxiv.org/abs/2007.06934).
 
 If there is any suggestion or error, feel free to fire an issue to let me know.
 
