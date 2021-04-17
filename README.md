@@ -1,7 +1,7 @@
 # CoreGen: Contextualized Code Representation Learning for Commit Message Generation
 This is the source code repository for the paper [CoreGen: Contextualized Code Representation Learning for Commit Message Generation](https://arxiv.org/abs/2007.06934).
 
-If there is any suggestion or error, feel free to fire an issue to let me know.
+If there is any suggestion or question, feel free to fire an issue here.
 
 ## Requirement
 - python 3.6+
