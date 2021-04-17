@@ -18,7 +18,7 @@ conda activate coregen
 Download the data [here](https://mycuhk-my.sharepoint.com/:u:/g/personal/1155079751_link_cuhk_edu_hk/EXsJ_2t1qtJHlFz9FEQe3swBx-Atm31Sg0cBbiDq6dW7ag?e=lUTeQQ) and unzip the dataset into the folder.
 
 ### 1. Training & Inference
-Simply run the script `./run_all.sh` with layer number and head number specified. You may easily adjust other parameters, such as batch size, epoch number and mask rate, by modifying the script file. The results reported in [paper]((https://arxiv.org/abs/2007.06934).) can be reproduced by setting the layer number to `2` and head number to `6` while keeping other parameter settings in the script unchanged.
+Simply run the script `./run_all.sh` with layer number and head number specified. You may easily adjust other parameters, such as batch size, epoch number and mask rate, by modifying the script file. The results reported in [paper](https://arxiv.org/abs/2007.06934) can be reproduced by setting the layer number to `2` and head number to `6` while keeping other parameter settings in the script unchanged.
 
 ```bash
 ./run_all.sh LAYER_NUM HEAD_NUM
@@ -43,4 +43,4 @@ CoreGen significantly outperforms previous state-of-the-art models with at least
 
 In our experiment comparing vanilla Transformer and CoreGen on model’s convergence along the fine-tuning procedure, CoreGen also converges faster to achieve equivalent generation quality as the vanilla Transformer model at 25 training epochs ahead. 
 
-More details about the performance of CoreGen are presented and analyzed in the [paper]((https://arxiv.org/abs/2007.06934).).
+More details about the performance of CoreGen are presented and analyzed in the [paper](https://arxiv.org/abs/2007.06934).
