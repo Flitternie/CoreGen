@@ -4,47 +4,43 @@ This is the source code repository for the paper [CoreGen: Contextualized Code R
 If there is any suggestion or question, feel free to fire an issue here.
 
 ## Requirement
-- python 3.6+
-- pytorch 0.4.1+
-- tqdm
-- numpy
+
+All required packages and versions can be found in the environment configuration file `environment.yml`, or you may simply build an identical conda environment like this:
+
+```bash
+conda env create -f environmeny.yml
+conda activate coregen
+```
 
 ## Usage
 ### 0. Data Preparation
+
 Download the data [here](https://mycuhk-my.sharepoint.com/:u:/g/personal/1155079751_link_cuhk_edu_hk/EXsJ_2t1qtJHlFz9FEQe3swBx-Atm31Sg0cBbiDq6dW7ag?e=lUTeQQ) and unzip the dataset into the folder.
 
-### 1. Data Preprocessing
+### 1. Training & Inference
+Simply run the script `./run_all.sh` with layer number and head number specified. You may easily adjust other parameters, such as batch size, epoch number and mask rate, by modifying the script file. The results reported in [paper]((https://arxiv.org/abs/2007.06934).) can be reproduced by setting the layer number to `2` and head number to `6` while keeping other parameter settings in the script unchanged.
+
 ```bash
-python preprocess.py -train_src data/cleaned.train.diff -train_tgt data/cleaned.train.msg -valid_src data/cleaned.valid.diff -valid_tgt data/cleaned.valid.msg -save_data exp/vocab/vocab -max_len 300 -min_word_count 0 -share_vocab
-```
-```bash
-python pretrain.py -train_src ./data/cleaned.train.diff -valid_src ./data/cleaned.valid.diff -vocab ./exp/vocab/vocab -save_data ./exp/vocab/pretrain_vocab -mask_rate 0.5 -max_len 300 -min_word_count 0
+./run_all.sh LAYER_NUM HEAD_NUM
 ```
 
-### 2. Training
-#### a) Contextualized Code Representation Learning
-```bash
-python train.py -data exp/vocab/pretrain_vocab -save_model exp/pretrain/pretrain_2layer_40epoch_6head_0.5maskrate -log exp/log/pretrain_2layer_40epoch_6head_0.5maskrate -save_mode best -save_thres 0.85 -proj_share_weight -embs_share_weight -label_smoothing -epoch 40 -batch_size 16 -n_head 6 -n_layers 2
-```
-> Adjust the ```save_thres``` parameter to define the model saving threshold
+### 2. Result Evaluation
 
-#### b) Downstream Commit Message Generation
-```bash
-python train.py -data exp/vocab/vocab -model exp/pretrain/pretrain_2layer_40epoch_6head_0.5maskrate_accu_XXX.chkpt -save_model exp/finetune/finetune_2layer_100epoch_6head_0.5maskrate -log exp/log/finetune_2layer_100epoch_6head_0.5maskrate -save_mode best -save_thres 0.35 -proj_share_weight -embs_share_weight -label_smoothing -epoch 100 -batch_size 32 -n_head 6 -n_layers 2
-```
-> Adjust the ```save_thres``` parameter to define the model saving threshold
+Compute the BLUE-4, METEOR and ROUGE score by running the script `./score.sh` with the reference file path and the inference result path specified. 
 
-### 3. Inference
 ```bash
-python translate.py -model ./exp/pretrain/finetune_2layer_100epoch_6head_0.5maskrate_accu_XXX.chkpt -vocab exp/vocab/vocab -src ./data/cleaned.test.diff -output exp/result/finetuned_2layer_0.5maskrate.msg
-```
-
-### 4. Result Evaluation
-Switch to python 2.7 for the following executions:
-```bash
-python evaluate/evaluate.py pathto/candidate pathto/reference
-perl evaluate/multi-bleu.perl -lc pathto/reference < pathto/candidate
+./score.sh REFERENCE PREDICTION
 ```
 ## Performance
-- To be updated
+CoreGen significantly outperforms previous state-of-the-art models with at least 28.18% improvement on BLEU-4 score. 
 
+| Model     | BLEU-4 | ROUGE-1 | ROUGE-2 | ROUGE-L | METEOR |
+| --------- | ------ | ------- | ------- | ------- | ------ |
+| NMT       | 14.17  | 21.29   | 12.19   | 20.85   | 12.99  |
+| NNGen     | 16.43  | 25.86   | 15.52   | 24.46   | 14.03  |
+| PtrGNCMsg | 9.78   | 23.66   | 9.61    | 23.67   | 11.41  |
+| CoreGen   | 21.06  | 32.87   | 20.17   | 30.85   | 16.53  |
+
+In our experiment comparing vanilla Transformer and CoreGen on model’s convergence along the fine-tuning procedure, CoreGen also converges faster to achieve equivalent generation quality as the vanilla Transformer model at 25 training epochs ahead. 
+
+More details about the performance of CoreGen are presented and analyzed in the [paper]((https://arxiv.org/abs/2007.06934).).
