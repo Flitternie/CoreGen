@@ -5,6 +5,8 @@ This script handling the training process.
 import argparse
 import math
 import time
+import random
+import numpy as np
 
 from tqdm import tqdm
 import torch
@@ -15,6 +17,11 @@ import transformer.Constants as Constants
 from dataset import TranslationDataset, paired_collate_fn
 from transformer.Models import Transformer
 from transformer.Optim import ScheduledOptim
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
 
 def cal_performance(pred, gold, smoothing=False):
     ''' Apply label smoothing if needed '''
@@ -185,6 +192,9 @@ def train(model, training_data, validation_data, optimizer, device, opt):
                 elif valid_accu >= max(valid_accus):
                     torch.save(checkpoint, model_name)
                     print('    - [Info] The checkpoint file has been updated.')
+            elif opt.save_mode == 'record':
+                model_name = opt.save_model + '_epoch_{0}.chkpt'.format(epoch_i)
+                torch.save(checkpoint, model_name)
 
         if log_train_file and log_valid_file:
             with open(log_train_file, 'a') as log_tf, open(log_valid_file, 'a') as log_vf:
@@ -201,26 +211,26 @@ def main():
 
     parser.add_argument('-data', required=True)
 
-    parser.add_argument('-epoch', type=int, default=10)
+    parser.add_argument('-epoch', type=int, default=100)
     parser.add_argument('-batch_size', type=int, default=64)
 
-    #parser.add_argument('-d_word_vec', type=int, default=512)
     parser.add_argument('-d_model', type=int, default=512)
     parser.add_argument('-d_inner_hid', type=int, default=2048)
     parser.add_argument('-d_k', type=int, default=64)
     parser.add_argument('-d_v', type=int, default=64)
 
-    parser.add_argument('-n_head', type=int, default=8)
-    parser.add_argument('-n_layers', type=int, default=6)
+    parser.add_argument('-n_head', type=int, default=6)
+    parser.add_argument('-n_layers', type=int, default=2)
     parser.add_argument('-n_warmup_steps', type=int, default=4000)
 
+    parser.add_argument('-seed', type=int, default=42)
     parser.add_argument('-dropout', type=float, default=0.1)
     parser.add_argument('-embs_share_weight', action='store_true')
     parser.add_argument('-proj_share_weight', action='store_true')
 
     parser.add_argument('-log', default=None)
     parser.add_argument('-save_model', default=None)
-    parser.add_argument('-save_mode', type=str, choices=['all', 'best'], default='best')
+    parser.add_argument('-save_mode', type=str, choices=['all', 'best', 'record'], default='best')
     parser.add_argument('-save_thres', type=float, default=None)
 
     parser.add_argument('-no_cuda', action='store_true')
@@ -231,6 +241,7 @@ def main():
     opt = parser.parse_args()
     opt.cuda = not opt.no_cuda
     opt.d_word_vec = opt.d_model
+    set_seed(opt.seed)
 
     #========= Loading Dataset =========#
     data = torch.load(opt.data)
@@ -264,6 +275,7 @@ def main():
             n_layers=opt.n_layers,
             n_head=opt.n_head,
             dropout=opt.dropout).to(device)
+        
     else:
         checkpoint = torch.load(opt.model)
         model_opt = checkpoint['settings']
@@ -282,7 +294,7 @@ def main():
             n_layers=model_opt.n_layers,
             n_head=model_opt.n_head,
             dropout=model_opt.dropout).to(device)
-
+        
         transformer.load_state_dict(checkpoint['model'])
         print('[Info] Trained model state loaded.')
 

@@ -9,7 +9,8 @@ from dataset import collate_fn, TranslationDataset
 from transformer.Translator import Translator
 from preprocess import read_instances_from_file, convert_instance_to_idx_seq
 from utils.postprocess import del_repeat
-def main():
+
+if __name__ == "__main__":
     '''Main Function'''
 
     parser = argparse.ArgumentParser(description='translate.py')
@@ -65,6 +66,3 @@ def main():
                     f.write(pred_line + '\n')
                     
     print('[Info] Finished.')
-
-if __name__ == "__main__":
-    main()

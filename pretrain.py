@@ -3,36 +3,69 @@ import argparse
 import torch
 import math
 import random
+import numpy as np
 import transformer.Constants as Constants
 
 def preprocess_for_pretrain(lines, mask_rate):
     lines = lines.strip().split("<nl> ")
-    source = []
-    target = []
-    for line in lines:
+    
+    addition_idx = []
+    deletion_idx = []
+    source_list = []
+    target_list = []
+    before_commit = []
+    after_commit = []
+
+    for idx, line in enumerate(lines):
         if line[0] == "+":
-            target.append(line[1:])
+            after_commit.append(line[1:])
+            addition_idx.append(idx)
         elif line[0] == "-":
-            source.append(line[1:])
+            before_commit.append(line[1:])
+            deletion_idx.append(idx)
         else:
-            target.append(line)
-            source.append(line)
-    if source == target:
-        maxlen = 0
-        for i in range(len(source)):
-            if len(source[i].split()) > maxlen:
-                maxlen_idx = i
-                maxlen = len(source[i].split())
+            after_commit.append(line)
+            before_commit.append(line)
+    
+    # handling commits with implicit binary file changes
+    if before_commit == after_commit:
+        before_commit_len = [len(src.split()) for src in before_commit]
+        maxlen = max(before_commit_len)
+        maxlen_idx = np.asarray(before_commit_len).argmax()
+
         mask_len = math.floor(mask_rate*maxlen)
         mask_start = random.randint(0, maxlen-mask_len)
         mask_end = mask_start + mask_len
-        line_to_mask = source[maxlen_idx].split()
+        line_to_mask = before_commit[maxlen_idx].split()
+
         for i in range(mask_start, mask_end):
             line_to_mask[i] = Constants.MSK_WORD
-        source[maxlen_idx] = " ".join(line_to_mask)
-    source = "<nl> ".join(source)
-    target = "<nl> ".join(target)
-    return source, target
+        before_commit[maxlen_idx] = " ".join(line_to_mask)
+
+    source_list.append("<nl> ".join(before_commit))
+    target_list.append("<nl> ".join(after_commit))
+
+    # handling commits with explicit code changes
+    for idx_to_mask in addition_idx + deletion_idx:
+        token_mask_source = []
+        token_mask_target = []
+        
+        line_to_mask = lines[idx_to_mask].split()
+        mask_len = math.floor(mask_rate*len(line_to_mask))
+        token_to_mask_idx = random.randint(0, len(line_to_mask) - 1)
+        for idx in range(len(lines)):
+            if idx == idx_to_mask:
+                # token_mask_source.append( " ".join([Constants.MSK_WORD if idx in range(token_to_mask_idx, token_to_mask_idx + mask_len) else token for idx, token in enumerate(line_to_mask)]) )
+                token_mask_source.append( " ".join([Constants.MSK_WORD if idx == token_to_mask_idx else token for idx, token in enumerate(line_to_mask)]) )
+                token_mask_target.append ( lines[idx] )
+            else:
+                token_mask_source.append( " ".join([Constants.PAD_WORD for token in lines[idx].split()]) )
+                token_mask_target.append( " ".join([Constants.PAD_WORD for token in lines[idx].split()]) )
+        
+        source_list.append(" <nl> ".join(token_mask_source))
+        target_list.append(" <nl> ".join(token_mask_target))
+    
+    return source_list, target_list
 
 
 def read_instances_from_file(inst_file, max_sent_len, keep_case, mask_rate):
@@ -45,23 +78,24 @@ def read_instances_from_file(inst_file, max_sent_len, keep_case, mask_rate):
         for sent in f:
             if not keep_case:
                 sent = sent.lower()
-            source, target = preprocess_for_pretrain(sent, mask_rate)
-            source_words = source.split()
-            target_words = target.split()
+            source_list, target_list = preprocess_for_pretrain(sent, mask_rate)
+            for source, target in zip(source_list, target_list):
+                source_words = source.split()
+                target_words = target.split()
 
-            if len(source_words) > max_sent_len or len(target_words) > max_sent_len:
-                trimmed_sent_count += 1
-            source_inst = source_words[:max_sent_len]
-            target_inst = target_words[:max_sent_len]
+                if len(source_words) > max_sent_len or len(target_words) > max_sent_len:
+                    trimmed_sent_count += 1
+                source_inst = source_words[:max_sent_len]
+                target_inst = target_words[:max_sent_len]
 
-            if source_inst:
-                source_insts += [[Constants.BOS_WORD] + source_inst + [Constants.EOS_WORD]]
-            else:
-                source_insts += [None]
-            if target_inst:
-                target_insts += [[Constants.BOS_WORD] + target_inst + [Constants.EOS_WORD]]
-            else:
-                target_insts += [None]
+                if source_inst:
+                    source_insts += [[Constants.BOS_WORD] + source_inst + [Constants.EOS_WORD]]
+                else:
+                    source_insts += [None]
+                if target_inst:
+                    target_insts += [[Constants.BOS_WORD] + target_inst + [Constants.EOS_WORD]]
+                else:
+                    target_insts += [None]
 
 
     print('[Info] Get {} instances from {}'.format(len(source_inst), inst_file))
