@@ -28,7 +28,7 @@ mkdir -p ${SAVEPATH}/finetune/
 
 # preprocessing
 python preprocess.py -train_src ${DATAPATH}/cleaned.train.diff -train_tgt ${DATAPATH}/cleaned.train.msg -valid_src ${DATAPATH}/cleaned.valid.diff -valid_tgt ${DATAPATH}/cleaned.valid.msg -save_data ${SAVEPATH}/vocab/vocab -max_len ${MAX_LENGTH} -min_word_count ${MIN_WORD_COUNT} -share_vocab
-python pretrain.py -train_src ${DATAPATH}/cleaned.train.diff -valid_src ${DATAPATH}/cleaned.valid.diff -vocab ${SAVEPATH}/vocab/vocab -save_data ${SAVEPATH}/vocab/pretrain_vocab -mask_rate ${MASK_RATE} -max_len ${MAX_LENGTH} -min_word_count ${MIN_WORD_COUNT} 
+python pretrain.py -train_src ${DATAPATH}/cleaned.train.diff -valid_src ${DATAPATH}/cleaned.valid.diff -vocab ${SAVEPATH}/vocab/vocab -save_data ${SAVEPATH}/vocab/pretrain_vocab -mask_rate ${MASK_RATE} -max_len ${MAX_LENGTH} -min_word_count ${MIN_WORD_COUNT}  
 
 # stage I training
 python train.py -data ${SAVEPATH}/vocab/pretrain_vocab -save_model ${SAVEPATH}/pretrain/pretrain_${LAYER}layer_${HEAD}head_${MASK_RATE}mask -log ${SAVEPATH}/log/pretrain_${LAYER}layer_${HEAD}head_${MASK_RATE}mask -save_mode best -proj_share_weight -embs_share_weight -label_smoothing -epoch ${STAGE1_EPOCH} -batch_size ${STAGE1_BATCH_SIZE} -n_head ${HEAD} -n_layers ${LAYER}

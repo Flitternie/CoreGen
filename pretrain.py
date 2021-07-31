@@ -6,7 +6,7 @@ import random
 import numpy as np
 import transformer.Constants as Constants
 
-def preprocess_for_pretrain(lines, mask_rate):
+def preprocess_for_pretrain(lines, mask_rate, in_statement_pred):
     lines = lines.strip().split("<nl> ")
     
     addition_idx = []
@@ -45,30 +45,31 @@ def preprocess_for_pretrain(lines, mask_rate):
     source_list.append("<nl> ".join(before_commit))
     target_list.append("<nl> ".join(after_commit))
 
-    # handling commits with explicit code changes
-    for idx_to_mask in addition_idx + deletion_idx:
-        token_mask_source = []
-        token_mask_target = []
-        
-        line_to_mask = lines[idx_to_mask].split()
-        mask_len = math.floor(mask_rate*len(line_to_mask))
-        token_to_mask_idx = random.randint(0, len(line_to_mask) - 1)
-        for idx in range(len(lines)):
-            if idx == idx_to_mask:
-                # token_mask_source.append( " ".join([Constants.MSK_WORD if idx in range(token_to_mask_idx, token_to_mask_idx + mask_len) else token for idx, token in enumerate(line_to_mask)]) )
-                token_mask_source.append( " ".join([Constants.MSK_WORD if idx == token_to_mask_idx else token for idx, token in enumerate(line_to_mask)]) )
-                token_mask_target.append ( lines[idx] )
-            else:
-                token_mask_source.append( " ".join([Constants.PAD_WORD for token in lines[idx].split()]) )
-                token_mask_target.append( " ".join([Constants.PAD_WORD for token in lines[idx].split()]) )
-        
-        source_list.append(" <nl> ".join(token_mask_source))
-        target_list.append(" <nl> ".join(token_mask_target))
+    if in_statement_pred:
+        # for idx_to_mask in range(len(lines)):
+        for idx_to_mask in addition_idx + deletion_idx:
+            token_mask_source = []
+            token_mask_target = []
+            
+            line_to_mask = lines[idx_to_mask].split()
+            mask_len = math.floor(mask_rate*len(line_to_mask))
+            token_to_mask_idx = random.randint(0, len(line_to_mask) - 1)
+            for idx in range(len(lines)):
+                if idx == idx_to_mask:
+                    # token_mask_source.append( " ".join([Constants.MSK_WORD if idx in range(token_to_mask_idx, token_to_mask_idx + mask_len) else token for idx, token in enumerate(line_to_mask)]) )
+                    token_mask_source.append( " ".join([Constants.MSK_WORD if idx == token_to_mask_idx else token for idx, token in enumerate(line_to_mask)]) )
+                    token_mask_target.append(lines[idx])
+                else:
+                    token_mask_source.append( " ".join([Constants.PAD_WORD for token in lines[idx].split()]) )
+                    token_mask_target.append( " ".join([Constants.PAD_WORD for token in lines[idx].split()]) )
+            
+            source_list.append(" <nl> ".join(token_mask_source))
+            target_list.append(" <nl> ".join(token_mask_target))
     
     return source_list, target_list
 
 
-def read_instances_from_file(inst_file, max_sent_len, keep_case, mask_rate):
+def read_instances_from_file(inst_file, max_sent_len, keep_case, mask_rate, in_statement_pred):
     ''' Convert file into word seq lists and vocab '''
 
     source_insts = []
@@ -78,7 +79,7 @@ def read_instances_from_file(inst_file, max_sent_len, keep_case, mask_rate):
         for sent in f:
             if not keep_case:
                 sent = sent.lower()
-            source_list, target_list = preprocess_for_pretrain(sent, mask_rate)
+            source_list, target_list = preprocess_for_pretrain(sent, mask_rate, in_statement_pred)
             for source, target in zip(source_list, target_list):
                 source_words = source.split()
                 target_words = target.split()
@@ -154,13 +155,14 @@ def main():
     parser.add_argument('-max_len', '--max_word_seq_len', type=int, default=50)
     parser.add_argument('-min_word_count', type=int, default=5)
     parser.add_argument('-keep_case', action='store_true')
+    parser.add_argument('-in_statement_pred', type=bool, default=False)
 
     opt = parser.parse_args()
     opt.max_token_seq_len = opt.max_word_seq_len + 2 # include the <s> and </s>
 
     # Training set
     train_src_word_insts, train_tgt_word_insts = read_instances_from_file(
-        opt.train_src, opt.max_word_seq_len, opt.keep_case, opt.mask_rate)
+        opt.train_src, opt.max_word_seq_len, opt.keep_case, opt.mask_rate, opt.in_statement_pred)
 
     if len(train_src_word_insts) != len(train_tgt_word_insts):
         print('[Warning] The training instance count is not equal.')
@@ -174,7 +176,7 @@ def main():
 
     # Validation set
     valid_src_word_insts, valid_tgt_word_insts = read_instances_from_file(
-        opt.valid_src, opt.max_word_seq_len, opt.keep_case, opt.mask_rate)
+        opt.valid_src, opt.max_word_seq_len, opt.keep_case, opt.mask_rate, opt.in_statement_pred)
 
     if len(valid_src_word_insts) != len(valid_tgt_word_insts):
         print('[Warning] The validation instance count is not equal.')
